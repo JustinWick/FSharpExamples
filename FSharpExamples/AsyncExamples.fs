@@ -14,8 +14,8 @@ open System.Threading.Tasks
 //}
 //|> Async.RunSynchronously
 
-
-let runSynchronouslyExample () =
+//// DONE!
+let runSynchronouslyExample() =
     // Prints "A", "B" immediately, then "C", "D" in 1 second
     printfn "A"
 
@@ -27,7 +27,9 @@ let runSynchronouslyExample () =
 
     printfn "D"
 
-let startExample () =
+
+//// DONE!
+let startExample() =
     // Prints "A", "D" immediately, then "B" quickly, and then "C" in 1 second.
     printfn "A"
 
@@ -41,7 +43,8 @@ let startExample () =
 
 
 
-let startAsTaskExample () =
+//// DONE!
+let startAsTaskExample() =
     // Prints "A", "D" immediately, then "B" quickly, then "C", "E" in 1 second
     printfn "A"
 
@@ -57,7 +60,8 @@ let startAsTaskExample () =
     printfn "E"
 
 
-let startImmediateExample () =
+//// DONE!
+let startImmediateExample() =
     // Prints "A", "B", "D" immediately, then "C" in 1 second
     printfn "A"
 
@@ -70,7 +74,8 @@ let startImmediateExample () =
     printfn "D"
 
 
-let startImmediateAsTaskExample () =
+//// DONE!
+let startImmediateAsTaskExample() =
     // Prints "A", "B", "D" immediately, then "C", "E" in 1 second
     printfn "A"
 
@@ -86,6 +91,7 @@ let startImmediateAsTaskExample () =
     printfn "E"
 
 
+//// DONE!
 let choiceExample1 () =
     printfn "Starting"
     // Prints a randomly selected odd number in 1-2 seconds, never 2
@@ -103,6 +109,7 @@ let choiceExample1 () =
         | Some (i) -> printfn $"{i}"
         | None -> printfn "No Result"
 
+//// DONE!
 let choiceExample2 () =
     // <<<JUSTIN NOTE: The docs on this function don't quite match behavior--the docs make me think that the exception is always thrown, but child computations are apparently cancelled when the first computation returns
 
@@ -131,7 +138,8 @@ let someRiskyBusiness () =
     | 1 -> 1
     | _ -> failwith "No, not The One"
 
-let fromContinuationsExample () =
+//// DONE!
+let fromContinuationsExample() =
     //
     // This anonymous function will call someRiskyBusiness() and be a good citizen with regards to the continuations
     // defined to report the outcome.
@@ -152,7 +160,8 @@ let fromContinuationsExample () =
         (fun oce -> printfn $"Cancelled: {oce}")
     )
 
-let ignoreExample () =
+//// DONE!
+let ignoreExample() =
     // <<<JW NOTE>>> - Is this any good???
 
     // From https://github.com/MicrosoftDocs/visualfsharpdocs/blob/master/docs/conceptual/snippets/fsasyncapis/snippet34.fs
@@ -167,9 +176,32 @@ let ignoreExample () =
             do! file.AsyncRead(numBytes) |> Async.Ignore
         }
     readFile "example.txt" 42 |> Async.Start
-
-
+    
+//// DONE!
 let parallelExample1 () =
+    // This will print "3", "5", "7", "11" (in any order) in 1-2 seconds and then
+    // [| false; true; true; true; false; true |]
+    let t =
+        [ 2; 3; 5; 7; 10; 11 ]
+        |> List.map
+            (fun i ->
+                async {
+                    do! Async.Sleep(System.Random().Next(1000, 2000))
+
+                    if i % 2 > 0 then
+                        printfn $"{i}"
+                        return true
+                    else
+                        return false
+                })
+        |> Async.Parallel
+        |> Async.StartAsTask
+
+    t.Wait()
+    printfn $"%A{t.Result}"
+    
+//// DONE!
+let parallelExample2 () =
     // This will print "3", "5" (in any order) in 1-2 seconds, and then "7", "11" (in any order) in 1-2 more seconds and then
     // [| false; true; true; true; false; true |]
     let computations =
@@ -186,32 +218,16 @@ let parallelExample1 () =
                         else
                             false
                 })
-    let t = Async.Parallel(computations, 3) |> Async.StartAsTask
-    t.Wait()
-    printfn $"%A{t.Result}"
 
-
-let parallelExample2 () =
-    // This will print "3", "5", "7", "11" (in any order) in 1-2 seconds and then
-    // [| false; true; true; true; false; true |]
     let t =
-        [ 2; 3; 5; 7; 10; 11 ]
-        |> List.map
-            (fun i ->
-                async {
-                    do! Async.Sleep(System.Random().Next(1000, 2000))
-                    if i % 2 > 0 then
-                       printfn $"{i}"
-                       return true
-                    else
-                       return false
-                })
-        |> Async.Parallel
+        Async.Parallel(computations, 3)
         |> Async.StartAsTask
+
     t.Wait()
     printfn $"%A{t.Result}"
 
-let sequentialExample () =
+//// DONE!
+let sequentialExample() =
     // This will print "3", "5", "7", "11" with ~1-2 seconds between them except for pauses where even numbers would be
     // and then prints [| false; true; true; true; false; true |]
     let computations =
@@ -220,29 +236,23 @@ let sequentialExample () =
             (fun i ->
                 async {
                     do! Async.Sleep(System.Random().Next(1000, 2000))
+
                     if i % 2 > 0 then
-                       printfn $"{i}"
-                       return true
+                        printfn $"{i}"
+                        return true
                     else
-                       return false
+                        return false
                 })
+
     let t =
-        Async.Parallel(computations, 3)
+        Async.Sequential(computations)
         |> Async.StartAsTask
+
     t.Wait()
     printfn $"%A{t.Result}"
 
+//// DONE!
 let sleepExample1 () =
-    // Prints "C", then "A" quickly, and then "B" 1 second later
-    async {
-        printfn "A"
-        do! Async.Sleep(TimeSpan(0, 0, 1))
-        printfn "B"
-    } |> Async.Start
-    printfn "C"
-
-
-let sleepExample2 () =
     // Prints "C", then "A" quickly, and then "B" 1 second later
     async {
         printfn "A"
@@ -252,8 +262,19 @@ let sleepExample2 () =
 
     printfn "C"
 
+//// DONE!
+let sleepExample2 () =
+    // Prints "C", then "A" quickly, and then "B" 1 second later
+    async {
+        printfn "A"
+        do! Async.Sleep(TimeSpan(0, 0, 1))
+        printfn "B"
+    } |> Async.Start
+    printfn "C"
 
-let cancelDefaultTokenExample () =
+
+//// DONE!
+let cancelDefaultTokenExample() =
     // This will print "2" 2 seconds from start, "3" 3 seconds from start, "5" 5 seconds from start, cease computation
     // and then print "Tasks Not Finished: One or more errors occurred. (A task was canceled.)".
     try
@@ -265,25 +286,29 @@ let cancelDefaultTokenExample () =
                         do! Async.Sleep(i * 1000)
                         printfn $"{i}"
                     })
+
         let t =
             Async.Parallel(computations, 3)
             |> Async.StartAsTask
+
         Thread.Sleep(6000)
         Async.CancelDefaultToken()
         printfn $"Tasks Finished: %A{t.Result}"
     with
     | :? System.AggregateException as ae -> printfn $"Tasks Not Finished: {ae.Message}"
 
-let catchExample () =
-    async { return someRiskyBusiness () }
+//// DONE!
+let catchExample() =
+    // Prints the returned value of the computation or the exception if there is one
+    async { return someRiskyBusiness() }
     |> Async.Catch
     |> Async.RunSynchronously
     |> function
         | Choice1Of2 result -> printfn $"Result: {result}"
         | Choice2Of2 e -> printfn $"Exception: {e}"
 
-
-let defaultCancellationTokenExample () =
+//// DONE!
+let defaultCancellationTokenExample() =
     // This will print "2" 2 seconds from start, "3" 3 seconds from start, "5" 5 seconds from start, cease computation
     // and then print "Computation Cancelled", followed by "Tasks Finished".
     Async.DefaultCancellationToken.Register(fun () -> printfn "Computation Cancelled") |> ignore
@@ -295,12 +320,13 @@ let defaultCancellationTokenExample () =
                 printfn $"{i}"
             })
     |> List.iter Async.Start
+
     Thread.Sleep(6000)
     Async.CancelDefaultToken()
     printfn "Tasks Finished"
 
-
-let onCancelExample () =
+//// DONE!
+let onCancelExample() =
     // This will print "2" 2 seconds from start, "3" 3 seconds from start, "5" 5 seconds from start, cease computation
     // and then print "Computation Cancelled: 7", "Computation Cancelled: 11" and "Tasks Finished" in any order.
     [ 2; 3; 5; 7; 11 ]
@@ -310,30 +336,36 @@ let onCancelExample () =
                 use! holder = Async.OnCancel(fun () -> printfn $"Computation Cancelled: {i}")
                 do! Async.Sleep(i * 1000)
                 printfn $"{i}"
-            } |> Async.Start)
+            }
+            |> Async.Start)
+
     Thread.Sleep(6000)
     Async.CancelDefaultToken()
     printfn "Tasks Finished"
 
-
-let startChildExample () =
+//// DONE!
+let startChildExample() =
     // Will throw a System.TimeoutException if called with a timeout < 2000, otherwise will print "Result: 3"
     let computeWithTimeout timeout =
         async {
-            let! completor1 = Async.StartChild(
-                                  (async {
-                                      do! Async.Sleep(1000)
-                                      return 1
-                                  }),
-                                  millisecondsTimeout = timeout
-                              )
-            let! completor2 = Async.StartChild(
-                                  (async {
-                                      do! Async.Sleep(2000)
-                                      return 2
-                                  }),
-                                  millisecondsTimeout = timeout
-                              )
+            let! completor1 =
+                Async.StartChild(
+                    (async {
+                        do! Async.Sleep(1000)
+                        return 1
+                     }),
+                    millisecondsTimeout = timeout
+                )
+
+            let! completor2 =
+                Async.StartChild(
+                    (async {
+                        do! Async.Sleep(2000)
+                        return 2
+                     }),
+                    millisecondsTimeout = timeout
+                )
+
             let! v1 = completor1
             let! v2 = completor2
             printfn $"Result: {v1 + v2}"
@@ -343,8 +375,8 @@ let startChildExample () =
     computeWithTimeout 2000
     computeWithTimeout 1000
 
-
-let tryCancelledExample () =
+//// DONE!
+let tryCancelledExample() =
     // This will print "2" 2 seconds from start, "3" 3 seconds from start, "5" 5 seconds from start, cease computation
     // and then print "Computation Cancelled: 7", "Computation Cancelled: 11" and "Tasks Finished" in any order.
     [ 2; 3; 5; 7; 11 ]
@@ -358,6 +390,7 @@ let tryCancelledExample () =
                 fun oce -> printfn $"Computation Cancelled: {i}"
             ))
     |> List.iter Async.Start
+
     Thread.Sleep(6000)
     Async.CancelDefaultToken()
     printfn "Tasks Finished"
@@ -366,20 +399,23 @@ let someLongRunningComputation () = async { Thread.Sleep(5000) }
 
 let someShortRunningComputation () = async { Thread.Sleep(1) }
 
-let switchToNewThreadExample () =
+//// DONE!
+let switchToNewThreadExample() =
     // This will run someLongRunningComputation() without blocking the threads in the threadpool
     async {
         do! Async.SwitchToNewThread()
         do! someLongRunningComputation()
     } |> Async.StartImmediate
 
-let switchToThreadPoolExample () =
+//// DONE!
+let switchToThreadPoolExample() =
     // This will run someLongRunningComputation() without blocking the threads in the threadpool, and then switch to the
     // threadpool for shorter computations.
     async {
         do! Async.SwitchToNewThread()
         do! someLongRunningComputation()
         do! Async.SwitchToThreadPool()
+
         for i in 1 .. 10 do
             do! someShortRunningComputation()
     } |> Async.StartImmediate
@@ -398,12 +434,12 @@ let switchToThreadPoolExample () =
 // SwitchToContext - This seems mostly useful for GUI-specific code, do we really need it here? Maybe show it generically using
 //                   let ctx = SynchronizationContext.Current ; do! Async.SwitchToThreadPool() ; something() ; do! Async.SwitchToContext(ctx)
 //                   ???
+// OnCancel
+// 
 
 
 // DELETEME
-let sumOfSquares1 l : float = l |> Seq.map (fun x -> x * x) |> Seq.sum
+let sumOfSquares1 l : float =
+    l |> Seq.map (fun x -> x * x) |> Seq.sum
 
-let sumOfSquares : seq<float>->float = (Seq.map (fun x -> x * x)) >> Seq.sum
-
-let ツ = "3"
-let _ = "" in match (1, 2, 3) with | (ツ) -> 3
+let sumOfSquares : seq<float> -> float = (Seq.map (fun x -> x * x)) >> Seq.sum
