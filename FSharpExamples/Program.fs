@@ -1,13 +1,33 @@
 // Learn more about F# at http://docs.microsoft.com/dotnet/fsharp
 
 open System
-
-// Define a function to construct a message to print
-let from whom =
-    sprintf "from %s" whom
+open System.Threading
+open FSharpExamples.AsyncExamples
 
 [<EntryPoint>]
 let main argv =
-    let message = from "F#" // Call the function
-    printfn "Hello world %s" message
+    
+//    runSynchronouslyExample()
+//    startExample()
+//    startAsTaskExample()
+//    startAsTaskExample()
+//    choiceExample2()
+    
+//    parallelExample1()
+//    Thread.Sleep(4000)
+//    parallelExample2()
+//    Thread.Sleep(4000)
+//    sequentialExample()
+//    Thread.Sleep(4000)
+//    sleepExample1()
+//    Thread.Sleep(4000)
+//    sleepExample2()
+//    Thread.Sleep(4000)
+//    cancelDefaultTokenExample()
+//    defaultCancellationTokenExample()
+//    onCancelExample()
+    // startChildExample()
+    tryCancelledExample()
+    Thread.Sleep(2000)
+    
     0 // return an integer exit code
